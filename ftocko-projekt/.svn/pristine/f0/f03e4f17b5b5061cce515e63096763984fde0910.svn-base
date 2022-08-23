@@ -1,0 +1,58 @@
+package org.foi.nwtis.ftocko.aplikacija_6.zrna;
+
+import java.util.Vector;
+
+import org.foi.nwtis.ftocko.aplikacija_6.jpa.criteriaapi.KorisniciJpa;
+import org.foi.nwtis.ftocko.jpa.entiteti.Korisnici;
+
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
+
+@RequestScoped
+@Named("prijava")
+public class Prijava {
+	
+	private String korime;
+	private String lozinka;
+	
+	@EJB
+	KorisniciJpa korisniciJpa;
+	
+	public String getKorime() {
+		return korime;
+	}
+	public void setKorime(String korime) {
+		this.korime = korime;
+	}
+	public String getLozinka() {
+		return lozinka;
+	}
+	public void setLozinka(String lozinka) {
+		this.lozinka = lozinka;
+	}
+	
+	public Object prijaviKorisnika() {
+		
+		boolean autenticiran = false;
+		
+		Vector<Korisnici> korisnici = (Vector<Korisnici>) korisniciJpa.dajSveKorisnike();
+		
+		for(int i=0;i<korisnici.size();i++) {
+			if(korisnici.get(i).getKorisnik().compareTo(korime) == 0 &&
+					korisnici.get(i).getLozinka().compareTo(lozinka) == 0) {
+				autenticiran = true;
+				break;
+			}
+		}
+		
+		if(autenticiran) {
+			return "OK";
+		}
+		
+		return "ERROR";
+		
+	}
+	
+}

@@ -1,0 +1,113 @@
+package org.foi.nwtis.ftocko.zadaca_3.dretve;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.foi.nwtis.ftocko.vjezba_06.konfiguracije.bazaPodataka.PostavkeBazaPodataka;
+import org.foi.nwtis.ftocko.zadaca_3.podaci.AerodromiPraceniDAO;
+import org.foi.nwtis.ftocko.zadaca_3.wsock.Info;
+
+import jakarta.inject.Inject;
+import jakarta.servlet.ServletContext;
+
+/**
+ * Klasa Osvjezivac.
+ */
+public class Osvjezivac extends Thread {
+	
+	/** vrijeme spavanja dretve */
+	private int vrijemeSpavanja = 0;
+	
+	/** indikator zaustavljanja dretve */
+	private boolean kraj = false;
+	
+	/** servlet kontekst */
+	private ServletContext sc = null;
+	
+	/** dao objekt za pracene aerodrome */
+	private AerodromiPraceniDAO apDao = new AerodromiPraceniDAO();
+	
+	/** injektiran info objekt. */
+	@Inject
+	Info info;
+	
+	/**
+	 * Instanciranje objekta klase Osvjezivac.
+	 *
+	 * @param servlet kontekst
+	 */
+	public Osvjezivac (ServletContext context) {
+		this.sc = context;
+		
+		if(info == null) {
+			info = new Info();
+		}
+	}
+	
+	/**
+	 * Metoda vraća poruku: datum i broj praćenih aerodroma.
+	 *
+	 * @return vraća poruku
+	 */
+	private String vratiPoruku() {
+
+		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+		Date datum = new Date();
+		String pDatum = sdf.format(datum);
+
+		int brojAerodroma = apDao.dohvatiBrojPracenihAerodroma();
+
+		return pDatum + ", "+brojAerodroma;
+	}
+
+	/**
+	 * Metoda za pokretanje dretve.
+	 */
+	@Override
+	public synchronized void start() {
+		
+		try {
+			PostavkeBazaPodataka pbp = (PostavkeBazaPodataka) sc.getAttribute("Postavke");
+			vrijemeSpavanja = Integer.parseInt(pbp.dajPostavku("ciklus.spavanje"));
+		}
+		catch(Exception e) {
+			System.out.println("Problem kod postavki!");
+		}
+		
+		super.start();
+	}
+
+
+	/**
+	 * Metoda kojom dretva obavlja svoj posao.
+	 */
+	@Override
+	public void run() {
+		
+		System.out.println("Dretva osvježivač je započela s radom...");
+		
+		while(!kraj) {
+			
+			info.informiraj(vratiPoruku());
+			
+			try {
+				sleep(vrijemeSpavanja*1000);
+			} catch (InterruptedException e) {
+				kraj = true;
+			}
+		}
+		
+		System.out.println("Dretva osvježivač je završila s radom...");
+	}
+
+	/**
+	 * Metoda za prekidanje dretve.
+	 */
+	@Override
+	public void interrupt() {
+		
+		kraj = true;
+		super.interrupt();
+	}
+
+}

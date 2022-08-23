@@ -1,0 +1,356 @@
+package org.foi.nwtis.ftocko.aplikacija_1;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.foi.nwtis.podaci.Aerodrom;
+import org.foi.nwtis.rest.podaci.Lokacija;
+
+import com.google.gson.Gson;
+
+public class DretvaServera extends Thread {
+
+	/** veza na mrežnu utičnicu. */
+	private Socket veza = null;
+
+	/** objekt klase za pripremu konfiguracijskih podataka. */
+	private PripremaServera priprema = null;
+
+	/** objekt klase Servera. */
+	private Server server = null;
+
+	/** naziv dretve servera. */
+	private String naziv = "";
+
+	/** statični brojač aktivnih dretvi. */
+	public volatile static int brojacDretvi = 0;
+
+	/** referenca na server socket za zaustavljanje istoga. */
+	private volatile ServerSocket ss = null;
+
+	/**
+	 * Konstruktor za instanciranje objekta klase DretvaServera.
+	 *
+	 * @param veza   veza na mrežnu utičnicu
+	 * @param konfig konfiguracija
+	 */
+	public DretvaServera(Socket veza, PripremaServera priprema, Server server, ServerSocket ss) {
+		super();
+		this.veza = veza;
+		this.priprema = priprema;
+		this.server = server;
+		this.naziv = "ftocko_" + DretvaServera.brojacDretvi;
+		this.ss = ss;
+	}
+
+	/**
+	 * Metoda za pokretanje dretve.
+	 */
+	@Override
+	public synchronized void start() {
+		super.start();
+	}
+
+	/**
+	 * Metoda obrade zadaće dretve.
+	 */
+	@Override
+	public void run() {
+
+		try (InputStreamReader isr = new InputStreamReader(this.veza.getInputStream(), Charset.forName("UTF-8"));
+				OutputStreamWriter osw = new OutputStreamWriter(this.veza.getOutputStream(),
+						Charset.forName("UTF-8"));) {
+
+			StringBuilder zahtjev = new StringBuilder();
+			while (true) {
+				int i = isr.read();
+				if (i == -1) {
+					break;
+				}
+				zahtjev.append((char) i);
+			}
+			this.veza.shutdownInput();
+
+			String odgovor = obradiZahtjev(zahtjev.toString());
+			osw.write(odgovor);
+
+			osw.flush();
+			this.veza.shutdownOutput();
+
+		} catch (SocketException e) {
+			priprema.ispis("Problem sa socketom!");
+		} catch (IOException e) {
+			priprema.ispis("Problem sa socketom ili U/I tokom!");
+		}
+
+		brojacDretvi--;
+	}
+
+	/**
+	 * Metoda obrađuje uneseni zahtjev korisnika i šalje ga na izvršavanje, ukoliko
+	 * se isti podudara sa sintaksom komandi.
+	 *
+	 * @param zahtjev postavljeni zahtjev korisnika
+	 * @return vraća dobiveni odgovor
+	 */
+	private String obradiZahtjev(String zahtjev) {
+
+		String odgovor = "ERROR 14 Format komande nije ispravan!";
+
+		Pattern pZahtjevStatus = Pattern.compile("^STATUS$");
+		Pattern pZahtjevQuit = Pattern.compile("^QUIT$");
+		Pattern pZahtjevLoad = Pattern.compile("^LOAD (?<aerodromi>\\[.*\\])$");
+		Pattern pDistance = Pattern.compile("^DISTANCE (?<a1>[A-Z]{4}) (?<a2>[A-Z]{4})$");
+		Pattern pClear = Pattern.compile("^CLEAR$");
+		Pattern pInit = Pattern.compile("^INIT$");
+
+		Matcher mZahtjevStatus = pZahtjevStatus.matcher(zahtjev);
+		Matcher mZahtjevQuit = pZahtjevQuit.matcher(zahtjev);
+		Matcher mZahtjevLoad = pZahtjevLoad.matcher(zahtjev);
+		Matcher mDistance = pDistance.matcher(zahtjev);
+		Matcher mClear = pClear.matcher(zahtjev);
+		Matcher mInit = pInit.matcher(zahtjev);
+
+		if (zahtjev.length() < 1) {
+			return "ERROR 14 Poslana je prazna komanda!";
+		}
+
+		else if (mZahtjevStatus.matches()) {
+
+			odgovor = "OK " + server.status;
+		}
+
+		else if (mZahtjevQuit.matches()) {
+
+			zaustaviServer();
+			odgovor = "OK";
+		}
+
+		else if (mZahtjevLoad.matches()) {
+
+			if (server.status == 0) {
+				odgovor = "ERROR 01 Poslužitelj hibernira i nije moguće izvršiti poslanu komandu!";
+			}
+
+			else if (server.status == 2) {
+				odgovor = "ERROR 03 Poslužitelj je aktivan i nije moguće izvršiti poslanu komandu!";
+			}
+
+			else {
+				int brojAerodroma = ucitajAerodrome(mZahtjevLoad.group("aerodromi"));
+				odgovor = "OK " + brojAerodroma;
+
+			}
+
+		}
+
+		else if (mDistance.matches()) {
+
+			if (server.status == 0) {
+				odgovor = "ERROR 01 Poslužitelj hibernira i nije moguće izvršiti poslanu komandu!";
+			}
+
+			else if (server.status == 1) {
+				odgovor = "ERROR 02 Poslužitelj je inicijaliziran i nije moguće izvršiti poslanu komandu!";
+			}
+
+			else {
+				odgovor = izvrsiZahtjevDistance(mDistance.group("a1"), mDistance.group("a2"));
+			}
+
+		}
+
+		else if (mClear.matches()) {
+
+			if (server.status == 0) {
+				odgovor = "ERROR 01 Poslužitelj hibernira i nije moguće izvršiti poslanu komandu!";
+
+			}
+
+			else if (server.status == 1) {
+				odgovor = "ERROR 02 Poslužitelj je inicijaliziran i nije moguće izvršiti poslanu komandu!";
+			}
+
+			else {
+				obrisiAerodrome();
+				odgovor = "OK";
+			}
+
+		}
+
+		else if (mInit.matches()) {
+
+			if (server.status == 1) {
+				odgovor = "ERROR 02 Poslužitelj je inicijaliziran i nije moguće izvršiti poslanu komandu!";
+			}
+
+			else if (server.status == 2) {
+				odgovor = "ERROR 03 Poslužitelj je aktivan i nije moguće izvršiti poslanu komandu!";
+			}
+
+			else {
+				inicijalizirajServer();
+				odgovor = "OK";
+			}
+
+		}
+
+		return odgovor;
+	}
+
+	private int ucitajAerodrome(String aerodromiJson) {
+
+		int brojAerodroma = 0;
+		List<Aerodrom> aerodromi = new ArrayList<>();
+
+		try {
+			Gson gson = new Gson();
+			aerodromi.addAll(Arrays.asList(gson.fromJson(aerodromiJson, Aerodrom[].class)));
+		}
+
+		catch (Exception e) {
+			System.out.println("Problem kod JSON upravljanja!");
+		}
+
+		server.aerodromi = new CopyOnWriteArrayList<Aerodrom>();
+
+		for (Aerodrom a : aerodromi) {
+			server.aerodromi.add(a);
+		}
+
+		brojAerodroma = server.aerodromi.size();
+
+		server.status = 2;
+
+		return brojAerodroma;
+
+	}
+
+	private void obrisiAerodrome() {
+		server.aerodromi.clear();
+		server.status = 0;
+	}
+
+	private void inicijalizirajServer() {
+		server.aerodromi = null;
+		server.status = 1;
+	}
+
+	private void zaustaviServer() {
+		try {
+			ss.close();
+		} catch (IOException e) {
+			priprema.ispis("Nije moguće zaustaviti poslužitelj!");
+		}
+	}
+
+	private boolean provjeriPostojanjeAerodroma(String icao) {
+
+		boolean postoji = false;
+
+		for (Aerodrom a : server.aerodromi) {
+			if (a.getIcao().compareTo(icao) == 0) {
+				postoji = true;
+				break;
+			}
+		}
+
+		return postoji;
+
+	}
+
+	private Aerodrom dohvatiAerodrom(String icao) {
+
+		Aerodrom aerodrom = null;
+
+		for (Aerodrom a : server.aerodromi) {
+			if (a.getIcao().compareTo(icao) == 0) {
+				aerodrom = a;
+				break;
+			}
+		}
+
+		return aerodrom;
+
+	}
+
+	private String izvrsiZahtjevDistance(String icao1, String icao2) {
+
+		boolean postojiA1 = provjeriPostojanjeAerodroma(icao1);
+		boolean postojiA2 = provjeriPostojanjeAerodroma(icao2);
+
+		Aerodrom a1 = null;
+		Aerodrom a2 = null;
+
+		String odgovor = "";
+
+		if (postojiA1 == false && postojiA2) {
+			return "ERROR 11 icao1 ne postoji!";
+		}
+
+		else if (postojiA1 && postojiA2 == false) {
+			return "ERROR 12 icao2 ne postoji!";
+		}
+
+		else if (postojiA1 == false && postojiA2 == false) {
+			return "ERROR 13 icao1 i icao2 ne postoje!";
+		}
+
+		else if (icao1.equals(icao2)) {
+			return "ERROR 14 icao1 i icao2 su identični!";
+		}
+
+		a1 = dohvatiAerodrom(icao1);
+		a2 = dohvatiAerodrom(icao2);
+
+		if (a1 != null && a2 != null) {
+			Lokacija l1 = a1.getLokacija();
+			Lokacija l2 = a2.getLokacija();
+			int udaljenost = izracunajUdaljenost(l1, l2);
+			odgovor = "OK " + Integer.toString(udaljenost);
+		}
+
+		return odgovor;
+	}
+
+	private int izracunajUdaljenost(Lokacija l1, Lokacija l2) {
+
+		double radijusZemlje = 6372797;
+		double gpsGs1 = Double.parseDouble(l1.getLatitude());
+		double gpsGs2 = Double.parseDouble(l2.getLatitude());
+		double gpsGd1 = Double.parseDouble(l1.getLongitude());
+		double gpsGd2 = Double.parseDouble(l2.getLongitude());
+
+		double gSirina = Math.toRadians(gpsGs2 - gpsGs1);
+		double gDuzina = Math.toRadians(gpsGd2 - gpsGd1);
+
+		double a = Math.sin(gSirina / 2) * Math.sin(gSirina / 2) + Math.cos(Math.toRadians(gpsGs1))
+				* Math.cos(Math.toRadians(gpsGs2)) * Math.sin(gDuzina / 2) * Math.sin(gDuzina / 2);
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		int udaljenost = (int) (radijusZemlje * c);
+
+		return udaljenost / 1000;
+
+	}
+
+	/**
+	 * Metoda za prekidanje dretve.
+	 */
+	@Override
+	public void interrupt() {
+
+		super.interrupt();
+	}
+
+}

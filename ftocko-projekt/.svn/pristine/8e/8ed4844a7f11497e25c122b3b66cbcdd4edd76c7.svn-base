@@ -1,0 +1,43 @@
+package org.foi.nwtis.ftocko.aplikacija_5.zrna.jms;
+
+import java.io.Serializable;
+
+import org.foi.nwtis.rest.podaci.MeteoPodaci;
+
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.jms.Connection;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.MessageProducer;
+import jakarta.jms.ObjectMessage;
+import jakarta.jms.Queue;
+import jakarta.jms.Session;
+
+@Stateless
+public class PosiljateljPoruke {
+
+	@Resource(mappedName = "jms/NWTiS_ftocko_QueueFactory")
+	private ConnectionFactory cf;
+	@Resource(mappedName = "jms/NWTiS_ftocko")
+	private Queue red;
+
+	public boolean novaPoruka(MeteoPodaci meteoPodaci) {
+		boolean status = true;
+
+		try {
+			Connection konekcija = cf.createConnection();
+			Session sesija = konekcija.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			MessageProducer mp = sesija.createProducer(red);
+			ObjectMessage msg = sesija.createObjectMessage((Serializable) meteoPodaci);
+			mp.send(msg);
+			mp.close();
+			konekcija.close();
+		} catch (Exception e) {
+			//e.printStackTrace();
+			System.out.println("Problem kod JMS-a!");
+			status = false;
+		}
+		return status;
+	}
+
+}

@@ -1,0 +1,13 @@
+package org.foi.nwtis.ftocko.aplikacija_5.wsock;
+
+import jakarta.websocket.server.ServerEndpoint;
+
+/**
+ * Klasa Info koja predstavlja Web Socket.
+ */
+@ServerEndpoint("/info")
+public class Info {
+
+	
+
+}

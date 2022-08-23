@@ -1,0 +1,270 @@
+package org.foi.nwtis.ftocko.zadaca_3.ws;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.foi.nwtis.ftocko.zadaca_3.podaci.AerodromiDAO;
+import org.foi.nwtis.ftocko.zadaca_3.podaci.AerodromiDolasciDAO;
+import org.foi.nwtis.ftocko.zadaca_3.podaci.AerodromiPolasciDAO;
+import org.foi.nwtis.ftocko.zadaca_3.podaci.AerodromiPraceniDAO;
+import org.foi.nwtis.ftocko.zadaca_3.podaci.UpraviteljUdaljenostiAerodroma;
+import org.foi.nwtis.podaci.Aerodrom;
+import org.foi.nwtis.rest.podaci.AvionLeti;
+
+import jakarta.annotation.Resource;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceContext;
+
+/**
+ * Klasa koja predstavlja web servis aerodromi.
+ */
+@WebService(serviceName = "aerodromi")
+public class WsAerodromi {
+	
+	/** kontekst web servisa */
+	@Resource
+	private WebServiceContext wsContext; 
+	
+	/** dao objekt aerodroma. */
+	private AerodromiDAO aDao = new AerodromiDAO();
+	
+	/** dao objekt pracenih aerodroma. */
+	private AerodromiPraceniDAO apDao = new AerodromiPraceniDAO();
+	
+	/** dao objekt polazaka. */
+	private AerodromiPolasciDAO aPolasciDao = new AerodromiPolasciDAO();
+	
+	/** dao objekt dolazaka. */
+	private AerodromiDolasciDAO aDolasciDao = new AerodromiDolasciDAO();
+	
+	/** objekt klase UpraviteljUdaljenostiAerodroma. */
+	private UpraviteljUdaljenostiAerodroma uua = new UpraviteljUdaljenostiAerodroma();
+	
+	/**
+	 * Metoda web servisa koja vraća sve aerodrome.
+	 *
+	 * @param str broj stranice
+	 * @param brRed broj redova
+	 * @return vraća kolekciju aerodroma
+	 */
+	@WebMethod
+	public List<Aerodrom> dajSveAerodrome(String str, String brRed){
+		
+		List<Aerodrom> aerodromi = null;
+		
+		if(str == null) str = "";
+		if(brRed == null) brRed = "";
+
+		if((str.compareTo("?")==0||str.length()<=0||str.compareTo("") == 0)||
+				(brRed.compareTo("?")==0||brRed.length()<=0||str.compareTo("")==0)) {
+			aerodromi = aDao.dohvatiSveAerodrome();
+		}
+		
+		else {
+			
+			try {
+				
+				int limit = 0;
+				int offset = 0;
+				int brojRedova = Integer.parseInt(brRed);
+				int stranica = Integer.parseInt(str);
+				
+				limit = brojRedova;
+				offset = (stranica-1)*brojRedova;
+				
+				aerodromi = aDao.dohvatiSveAerodrome(limit,offset);
+				
+			}
+			catch(Exception e) {
+				System.out.println("Problem kod parsiranja!");
+			}
+			
+		}
+		
+		if(aerodromi != null) {
+			return aerodromi;
+		}
+		
+		aerodromi = new ArrayList<Aerodrom>();
+		return aerodromi;
+	}
+	
+	/**
+	 * Metoda web servisa koja vraća broj aerodroma.
+	 *
+	 * @return vraća broj aerodroma
+	 */
+	@WebMethod
+	public int dajBrojAerodroma(){
+		
+		int broj = 0;
+		broj = aDao.dohvatiBrojAerodroma();
+		
+		return broj;
+	}
+	
+	/**
+	 * Metoda web servisa koja vraća praćene aerodroma.
+	 *
+	 * @return vraća praćene aerodrome
+	 */
+	@WebMethod
+	public List<Aerodrom> dajAerodromePreuzimanje(){
+		
+		List<Aerodrom> aerodromi = null;
+		aerodromi = apDao.dohvatiPraceneAerodrome();
+		
+		if(aerodromi != null) {
+			return aerodromi;
+		}
+		
+		aerodromi = new ArrayList<Aerodrom>();
+		return aerodromi;
+
+	}
+	
+	/**
+	 * Metoda web servisa koja vraća polaske zadanog aerodroma na zadani datum.
+	 *
+	 * @param icao identifikator aerodroma
+	 * @param dan datum
+	 * @return vraća polaske
+	 */
+	@WebMethod
+	public List<AvionLeti> dajPolaske(String icao, String dan){
+		
+		List<AvionLeti> polasci = null;
+		long prviTimestamp = 0;
+		long drugiTimestamp = 0;
+		
+		String prvoVrijDan = dan;
+		String drugoVrijDan = dan;
+		
+		prvoVrijDan = prvoVrijDan += " 00:00:00";
+		drugoVrijDan = drugoVrijDan += " 23:59:59";
+		
+		try {
+			Date prviDatum = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(prvoVrijDan);
+			prviTimestamp = prviDatum.getTime()/1000;
+			
+			Date drugiDatum = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(drugoVrijDan);
+			drugiTimestamp = drugiDatum.getTime()/1000;
+		} catch (Exception e) {
+			System.out.println("Problem kod parsiranja!");
+		}  
+		
+		polasci = aPolasciDao.dajSvePolaske(icao, (int)prviTimestamp, (int)drugiTimestamp);
+		
+		if(polasci != null) {
+			return polasci;
+		}
+		
+		polasci = new ArrayList<AvionLeti>();
+		return polasci;
+		
+	}
+	
+	/**
+	 * Metoda web servisa koja vraća dolaske zadanog aerodroma na zadani datum.
+	 *
+	 * @param icao identifikator aerodroma
+	 * @param dan datum
+	 * @return vraća dolaske
+	 */
+	@WebMethod
+	public List<AvionLeti> dajDolaske(String icao, String dan){
+		
+		List<AvionLeti> dolasci = null;
+		long prviTimestamp = 0;
+		long drugiTimestamp = 0;
+		
+		String prvoVrijDan = dan;
+		String drugoVrijDan = dan;
+		
+		prvoVrijDan = prvoVrijDan += " 00:00:00";
+		drugoVrijDan = drugoVrijDan += " 23:59:59";
+		
+		try {
+			Date prviDatum=new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(prvoVrijDan);
+			prviTimestamp = prviDatum.getTime()/1000;
+			
+			Date drugiDatum=new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(drugoVrijDan);
+			drugiTimestamp = drugiDatum.getTime()/1000;
+		} catch (Exception e) {
+			System.out.println("Problem kod parsiranja!");
+		}  
+		
+		dolasci = aDolasciDao.dajSveDolaske(icao, (int)prviTimestamp, (int)drugiTimestamp);
+		
+		if(dolasci != null) {
+			return dolasci;
+		}
+		
+		dolasci = new ArrayList<AvionLeti>();
+		return dolasci;
+		
+	}
+	
+	/**
+	 * Metoda web servisa koja dodaje novi praćeni aerodrom.
+	 *
+	 * @param icao identifikator aerodroma
+	 * @return vraća uspješnost operacije
+	 */
+	@WebMethod
+	public String dodajAerodromPreuzimanje(String icao){
+		
+		int izvrseno = apDao.dodajPraceniAerodrom(icao);
+		
+		if(izvrseno > 0) {
+			return "Aerodrom "+icao+" je dodan u kolekciju praćenih aerodroma u bazi!";
+		}
+		
+		return "Aerodrom "+icao+" nije moguće dodati!";
+		
+	}
+	
+	/**
+	 * Metoda web servisa koja vraća najbliži aerodrom iz kolekcije aerodroma/praćenih aerodroma zadanoj lokaciji.
+	 *
+	 * @param lokacija zadana lokacija
+	 * @param vrsta vrsta (1=kolekcija praćenih aerodroma, 0=kolekcija aerodroma)
+	 * @return vraća najbliži aerodrom
+	 */
+	@WebMethod
+	public Aerodrom dajNajbliziAerodrom(String lokacija, String vrsta){
+		
+		Aerodrom a = null;
+		
+		if(vrsta.compareTo("false") == 0) {
+			
+			List<Aerodrom> aerodromi = aDao.dohvatiSveAerodrome();
+			
+			if(aerodromi != null) {
+				a = uua.vratiNajbliziAerodrom(aerodromi, lokacija);
+			}
+			
+		}
+		
+		else {
+			
+			List<Aerodrom> aerodromi = apDao.dohvatiPraceneAerodrome();
+			
+			if(aerodromi != null) {
+				a = uua.vratiNajbliziAerodrom(aerodromi, lokacija);
+			}
+			
+		}
+		
+		if(a!=null) {
+			return a;
+		}
+		
+		return new Aerodrom();
+		
+	}
+	
+}

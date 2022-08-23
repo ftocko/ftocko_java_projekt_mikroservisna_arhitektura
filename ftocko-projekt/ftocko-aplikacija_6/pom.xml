@@ -1,0 +1,14 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.foi.nwtis.ftocko</groupId>
+	<artifactId>ftocko_aplikacija_6</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+	<name>ftocko_aplikacija_6</name>
+
+	<modules>
+		<module>ftocko-aplikacija_6_jpa</module>
+		<module>ftocko-aplikacija_6_wa</module>
+
+	</modules>
+</project>

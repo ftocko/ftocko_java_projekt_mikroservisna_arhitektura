@@ -1,0 +1,22 @@
+package org.foi.nwtis.ftocko.aplikacija_6.zrna;
+
+import java.util.List;
+
+import org.foi.nwtis.podaci.Aerodrom;
+
+import jakarta.ejb.Singleton;
+
+@Singleton
+public class Aerodromi {
+	
+	private List<Aerodrom> sviAerodromi = null;
+
+	public List<Aerodrom> getSviAerodromi() {
+		return sviAerodromi;
+	}
+
+	public void setSviAerodromi(List<Aerodrom> sviAerodromi) {
+		this.sviAerodromi = sviAerodromi;
+	}
+
+}

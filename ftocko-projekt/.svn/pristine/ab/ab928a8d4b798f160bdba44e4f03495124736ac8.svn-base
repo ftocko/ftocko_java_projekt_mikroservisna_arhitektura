@@ -1,0 +1,124 @@
+package org.foi.nwtis.ftocko.aplikacija_5.wsock;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.OnClose;
+import jakarta.websocket.OnError;
+import jakarta.websocket.OnMessage;
+import jakarta.websocket.OnOpen;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerEndpoint;
+
+/**
+ * Klasa Info koja predstavlja Web Socket.
+ */
+@ServerEndpoint("/info")
+public class Info {
+
+	/** red u kojeg se spremaju sesije korisnika. */
+	static Queue<Session> red = new ConcurrentLinkedQueue<>();
+
+	/**
+	 * Metoda vraća poruku: datum i broj praćenih aerodroma.
+	 *
+	 * @return vraća poruku
+	 */
+	private String vratiPoruku(String icaoDodanogAerodroma) {
+
+		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+		Date datum = new Date();
+		String pDatum = sdf.format(datum);
+		
+		return pDatum + ", "+icaoDodanogAerodroma;
+	}
+	
+	/**
+	 * Metoda za informiranje (slanja poruke) svim aktivnim sesijama.
+	 *
+	 * @param poruka poruka koja se šalje
+	 */
+	public void informiraj (String poruka) {
+		for(Session s : red) {
+			if(s.isOpen()) {
+				try {
+					s.getBasicRemote().sendText(poruka);
+				} catch (IOException e) {
+					System.out.println("Sesija: "+s.getId()+" greska: "+e.getMessage());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Metoda za slanje poruke svim aktivnim sesijama.
+	 *
+	 * @param poruka poruka koja se šalje
+	 */
+	public static void posalji(String poruka) {
+		
+		try {
+			for (Session session : red) {
+				if (session.isOpen()) {
+					session.getBasicRemote().sendText(poruka);
+				}
+			}
+		} catch (IOException ex) {
+			System.out.println(ex.getMessage());
+		}
+	}
+
+	/**
+	 * metoda za otvaranje sesije.
+	 *
+	 * @param sesija objekt sesije
+	 * @param konfig objekt klase EndpointConfig
+	 */
+	@OnOpen
+	public void otvori(Session sesija, EndpointConfig konfig) {
+		red.add(sesija);
+		System.out.println("Otvorena sesija: " + sesija.getId());
+	}
+
+	/**
+	 * Metoda za zatvaranje sesije.
+	 *
+	 * @param sesija objekt sesije
+	 * @param razlog razlog zatvaranja
+	 */
+	@OnClose
+	public void zatvori(Session sesija, CloseReason razlog) {
+		red.remove(sesija);
+		System.out.println("Zatvorena sesija: " + sesija.getId() + " razlog: " + razlog.getReasonPhrase());
+	}
+
+	/**
+	 * Metoda koja se aktivira prilikom dobivanja poruke od korisnika.
+	 *
+	 * @param sesija objekt sesije
+	 * @param poruka pristigla poruka
+	 */
+	@OnMessage
+	public void stiglaPoruka(Session sesija, String porukaIcao) {
+		System.out.println("Sesija: " + sesija.getId() + ", poruka: " + porukaIcao);
+
+		posalji(vratiPoruku(porukaIcao));
+	}
+
+	/**
+	 * Metoda koja se aktivira prilikom greške.
+	 *
+	 * @param sesija objekt sesije
+	 * @param greska pristigla greska
+	 */
+	@OnError
+	public void greska(Session sesija, Throwable greska) {
+		System.out.println("Sesija: " + sesija.getId() + " greska: " + greska.getMessage());
+	}
+
+}

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:p="http://primefaces.org/ui">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+	<h:head>
+		<title>Pregled aerodroma</title>
+
+	</h:head>
+	<h:body>
+		<a href="#{application.contextPath}/index.xhtml">Početna</a>
+		<br />
+		<br />
+		<h2>Pregled aerodroma za preuzimanje</h2>
+		<p:dataTable id="prikazPracenihAerodroma"
+			value="#{pregledAerodroma.praceniAerodromi}" var="a" paginator="true"
+			rows="15">
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Icao" />
+				</f:facet>
+				#{a.icao}
+			</p:column>
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Naziv" />
+				</f:facet>
+				#{a.naziv}
+			</p:column>
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Država" />
+				</f:facet>
+				#{a.drzava}
+			</p:column>
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Lokacija" />
+				</f:facet>
+				#{a.lokacija.latitude}, #{a.lokacija.longitude}
+			</p:column>
+		</p:dataTable>
+		<br />
+		<br />
+		<h2>Pregled svih aerodroma</h2>
+		<h:form id="unosAir">
+			<h:outputText value="Pretražite aerodrome po nazivu ili icao-u: " />
+			<h:inputText id="noviAir"
+				value="#{pregledAerodroma.uneseniNazivAerodroma}"
+				a:placeholder="Unesite naziv ili icao aerodroma!" />
+			<br />
+			<br />
+			<h:commandButton id="filtriraj" value="Pretraži"
+				action="#{pregledAerodroma.pretraga}">
+				<f:ajax event="click" execute="unosAir" render="formaAerodroma" />
+			</h:commandButton>
+		</h:form>
+		<br />
+		<br />
+
+		<h:form id="formaAerodroma">
+			<p:dataTable id="prikazAerodroma"
+				value="#{pregledAerodroma.aerodromi}" var="a" paginator="false"
+				selectionMode="single" rowKey="#{a.icao}">
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Icao" />
+					</f:facet>
+				#{a.icao}
+			</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Naziv" />
+					</f:facet>
+				#{a.naziv}
+			</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Država" />
+					</f:facet>
+				#{a.drzava}
+			</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Lokacija" />
+					</f:facet>
+				#{a.lokacija.latitude}, #{a.lokacija.longitude}
+			</p:column>
+				<p:column>
+					<p:commandLink ajax="false"
+						action="#{pregledAerodroma.dodajZaPreuzimanje(a)}" value="Dodaj" />
+				</p:column>
+			</p:dataTable>
+		</h:form>
+
+	</h:body>
+</f:view>
+</html>
+

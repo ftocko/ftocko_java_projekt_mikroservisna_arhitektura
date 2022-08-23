@@ -1,0 +1,21 @@
+---OSNOVNI UVJETI---
+SELECT COUNT(*) FROM AERODROMI_POLASCI; //UPIT ZA BROJ POLAZAKA S AERODROMA
+SELECT COUNT(*) FROM AERODROMI_DOLASCI; //UPIT ZA BROJ DOLAZAKA S AERODROMA
+SELECT COUNT(*) AS 'Broj polazaka', DATE_FORMAT(FROM_UNIXTIME(firstSeen), '%Y-%m-%d') AS 'Dan' FROM AERODROMI_POLASCI GROUP BY 2 ORDER BY 2 ASC; //UPIT ZA BROJ POLAZAKA PO DANU
+SELECT COUNT(*) AS 'Broj dolazaka', DATE_FORMAT(FROM_UNIXTIME(lastSeen), '%Y-%m-%d') AS 'Dan' FROM AERODROMI_DOLASCI GROUP BY 2 ORDER BY 2 ASC; //UPIT ZA BROJ DOLAZAKA PO DANU
+---OSNOVNI UVJETI---
+
+---DODATNI UVJETI---
+
+SELECT COUNT(*) AS 'Broj preuzetih podataka polazaka', DATE_FORMAT(FROM_UNIXTIME(firstSeen), '%Y-%m-%d') AS 'Dan' FROM AERODROMI_POLASCI GROUP BY 2 ORDER BY 2 ASC;
+SELECT COUNT(*) AS 'Broj preuzetih podataka dolazaka', DATE_FORMAT(FROM_UNIXTIME(lastSeen), '%Y-%m-%d') AS 'Dan' FROM AERODROMI_DOLASCI GROUP BY 2 ORDER BY 2 ASC;
+
+SELECT COUNT(*) AS 'Broj preuzetih podataka polazaka', DATE_FORMAT(FROM_UNIXTIME(firstSeen), '%Y-%m-%d') AS 'Dan', estDepartureAirport AS 'Aerodrom' FROM AERODROMI_POLASCI GROUP BY 2, 3;
+SELECT COUNT(*) AS 'Broj preuzetih podataka dolazaka', DATE_FORMAT(FROM_UNIXTIME(lastSeen), '%Y-%m-%d') AS 'Dan', estArrivalAirport AS 'Aerodrom' FROM AERODROMI_DOLASCI GROUP BY 2, 3;
+
+SELECT COUNT(*) AS 'Broj preuzetih podataka polazaka', DATE_FORMAT(FROM_UNIXTIME(firstSeen), '%Y-%m-%d') AS 'Dan', estDepartureAirport AS 'Aerodrom' FROM AERODROMI_POLASCI WHERE estDepartureAirport = 'LDZA' OR estDepartureAirport = 'LOWW' OR estDepartureAirport = 'OMDB' GROUP BY 2, 3;
+SELECT COUNT(*) AS 'Broj preuzetih podataka dolazaka', DATE_FORMAT(FROM_UNIXTIME(lastSeen), '%Y-%m-%d') AS 'Dan', estArrivalAirport AS 'Aerodrom' FROM AERODROMI_DOLASCI WHERE estArrivalAirport  = 'LDZA' OR estArrivalAirport = 'LOWW' OR estArrivalAirport = 'OMDB' GROUP BY 2, 3;
+
+---DODATNI UVJETI---
+
+

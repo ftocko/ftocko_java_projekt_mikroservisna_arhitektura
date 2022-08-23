@@ -1,0 +1,125 @@
+package org.foi.nwtis.ftocko.aplikacija_6.slusaci;
+import java.io.File;
+import java.util.Vector;
+
+import org.foi.nwtis.ftocko.aplikacija_6.jpa.criteriaapi.KorisniciJpa;
+import org.foi.nwtis.ftocko.jpa.entiteti.Korisnici;
+import org.foi.nwtis.ftocko.vjezba_03.konfiguracije.NeispravnaKonfiguracija;
+import org.foi.nwtis.ftocko.vjezba_06.konfiguracije.bazaPodataka.KonfiguracijaBP;
+import org.foi.nwtis.ftocko.vjezba_06.konfiguracije.bazaPodataka.PostavkeBazaPodataka;
+import org.hsqldb.lib.List;
+
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.WebListener;
+
+/**
+ * Klasa SlusacAplikacije.
+ */
+@WebListener
+public class SlusacAplikacije implements ServletContextListener {
+	
+	/** servlet kontekst */
+	public static ServletContext sc = null;
+
+    public SlusacAplikacije() {
+       
+    }
+    
+    @EJB
+	KorisniciJpa korisniciJpa;
+    
+    /**
+     * Metoda koja obavlja učitavanje postavki.
+     *
+     * @param sce objekt klase ServletContextEvent
+     */
+    private void ucitajPostavke(ServletContextEvent sce) {
+    	
+    	String nazivDatoteke = "";
+    	ServletContext context = sce.getServletContext();
+    	sc = context;
+    	
+    	try {
+    		nazivDatoteke = context.getInitParameter("konfiguracija");
+    	}
+    	catch(Exception e) {
+    		System.out.println("Nije moguće dohvatiti inicijalni parametar konteksta!");
+			return;
+    	}
+    	
+    	String putanja = context.getRealPath("/WEB-INF");
+    	nazivDatoteke = putanja + File.separator+nazivDatoteke;
+    	
+    	KonfiguracijaBP konfig = new PostavkeBazaPodataka(nazivDatoteke);
+    	
+    	try {
+			konfig.ucitajKonfiguraciju();
+		} catch (NeispravnaKonfiguracija e) {
+			System.out.println("Neispravna konfiguracija!");
+			return;
+		}
+    	
+    	System.out.println("Konfiguracija učitana!");
+    	context.setAttribute("Postavke", konfig);
+    	
+    	/*try {
+    		int broj = korisniciJpa.dajSveKorisnike().size();
+    		Vector<Korisnici> korisnici = (Vector<Korisnici>) korisniciJpa.dajSveKorisnike();
+    		System.out.println("Broj korisnika: "+broj);
+    		
+    		for(int i=0;i<korisnici.size();i++) {
+    			System.out.println(korisnici.get(i).getKorisnik());
+    		}
+    		
+    	}
+    	
+    	catch(Exception e) {
+    		e.printStackTrace();
+    		System.out.println("Problem kod dohvaćanja korisnika!");
+    	}*/
+    	
+    }
+    
+    /**
+     * Metoda koja obavlja brisanje postavki.
+     *
+     * @param sce objekt klase ServletContextEvent
+     */
+    private void obrisiPostavke(ServletContextEvent sce) {
+    	
+    	ServletContext context = sce.getServletContext();
+		context.removeAttribute("Postavke");
+		System.out.println("Postavke obrisane!");
+    	
+    }
+
+    /**
+     * Metoda koja se poziva kod deploya aplikacije.
+     *
+     * @param sce objekt klase ServletContextEvent
+     */
+    @Override
+	public void contextInitialized(ServletContextEvent sce) {
+    	
+    	ucitajPostavke(sce);
+    	
+		ServletContextListener.super.contextInitialized(sce);
+	}
+    
+	/**
+	 * Metoda koja se poziva kod undeploya aplikacije.
+	 *
+	 * @param sce objekt klase ServletContextEvent
+	 */
+	@Override
+	public void contextDestroyed(ServletContextEvent sce) {
+		
+		obrisiPostavke(sce);
+		
+		ServletContextListener.super.contextDestroyed(sce);
+	}
+    
+}

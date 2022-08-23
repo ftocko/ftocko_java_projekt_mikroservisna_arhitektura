@@ -1,0 +1,26 @@
+package org.foi.nwtis.ftocko.aplikacija_6.zrna;
+
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Named;
+
+@RequestScoped
+@Named("prijava")
+public class Prijava {
+	
+	private String korime;
+	private String lozinka;
+	
+	public String getKorime() {
+		return korime;
+	}
+	public void setKorime(String korime) {
+		this.korime = korime;
+	}
+	public String getLozinka() {
+		return lozinka;
+	}
+	public void setLozinka(String lozinka) {
+		this.lozinka = lozinka;
+	}
+	
+}

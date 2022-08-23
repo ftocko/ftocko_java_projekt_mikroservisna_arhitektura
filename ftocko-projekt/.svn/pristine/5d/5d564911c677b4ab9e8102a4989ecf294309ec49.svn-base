@@ -1,0 +1,78 @@
+package org.foi.nwtis.ftocko.zadaca_3.ws;
+
+import org.foi.nwtis.ftocko.vjezba_06.konfiguracije.bazaPodataka.PostavkeBazaPodataka;
+import org.foi.nwtis.ftocko.zadaca_3.podaci.AerodromiDAO;
+import org.foi.nwtis.ftocko.zadaca_3.slusaci.SlusacAplikacije;
+import org.foi.nwtis.podaci.Aerodrom;
+import org.foi.nwtis.rest.klijenti.LIQKlijent;
+import org.foi.nwtis.rest.klijenti.NwtisRestIznimka;
+import org.foi.nwtis.rest.klijenti.OWMKlijent;
+import org.foi.nwtis.rest.podaci.Lokacija;
+import org.foi.nwtis.rest.podaci.MeteoPodaci;
+
+import jakarta.annotation.Resource;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceContext;
+
+/**
+ * Klasa WsMeteo koja predstavlja web servis meteo.
+ */
+@WebService(serviceName = "meteo")
+public class WsMeteo {
+	
+	/** kontekst web servisa */
+	@Resource
+	private WebServiceContext wsContext; 
+	
+	/** dao objekt aerodroma */
+	private AerodromiDAO aDao = new AerodromiDAO();
+	
+	/**
+	 * Metoda web servisa koja vraća meteo podatke za zadani aerodrom.
+	 *
+	 * @param icao identifikator aerodroma
+	 * @return vraća meteo podatke
+	 */
+	@WebMethod
+	public MeteoPodaci dajMeteo(String icao){
+
+		Aerodrom trazeni = null;
+		Lokacija l = null;
+		
+		trazeni = aDao.dohvatiAerodrom(icao);
+		
+		if(trazeni != null) {
+			l = trazeni.getLokacija();
+		}
+		
+		String apiKljuc = "";
+		
+		try {
+			PostavkeBazaPodataka pbp = (PostavkeBazaPodataka) SlusacAplikacije.sc.getAttribute("Postavke");
+			apiKljuc = pbp.dajPostavku("OpenWeatherMap.apikey");
+		}
+		
+		catch(Exception e) {
+			System.out.println("Problem kod dohvaćanja postavki!");
+		}
+
+		OWMKlijent owmk = new OWMKlijent(apiKljuc);
+		MeteoPodaci mp = null;
+		
+		try {
+			mp = owmk.getRealTimeWeather(l.getLatitude(), l.getLongitude());
+		} catch (Exception e) {
+			System.out.println("Problem kod dohvaćanja meteo podataka!");
+		}
+		
+		if(mp != null) {
+			return mp;
+		}
+		
+		return new MeteoPodaci();
+	}
+	
+	
+
+}

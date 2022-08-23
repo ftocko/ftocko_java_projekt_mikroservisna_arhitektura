@@ -1,0 +1,46 @@
+Resurs: provjere
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "lozinka: ftocko" http://localhost:8080/ftocko_aplikacija_3/api/provjere
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftock" -H "lozinka: ftock" http://localhost:8080/ftocko_aplikacija_3/api/provjere/1
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "lozinka: ftocko" http://localhost:8080/ftocko_aplikacija_3/api/provjere/16
+
+curl -X DELETE http://localhost:8080/ftocko_aplikacija_3/api/provjere/68 -H "Content-Type: application/json" -H "korisnik: ftocko" -H "lozinka: ftocko"
+curl -X DELETE http://localhost:8080/ftocko_aplikacija_3/api/provjere/16 -H "Content-Type: application/json" -H "korisnik: pkos" -H "lozinka: ftocko"
+
+curl -X DELETE http://localhost:8080/ftocko_aplikacija_3/api/provjere/korisnik/jlennon -H "Content-Type: application/json" -H "korisnik: ftocko" -H "lozinka: ftocko"
+curl -X DELETE http://localhost:8080/ftocko_aplikacija_3/api/provjere/korisnik/jlennon -H "Content-Type: application/json" -H "korisnik: pkos" -H "lozinka: 12345"
+
+Resurs: korisnici
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 15" http://localhost:8080/ftocko_aplikacija_3/api/korisnici
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 15" http://localhost:8080/ftocko_aplikacija_3/api/korisnici/pkos
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 15" http://localhost:8080/ftocko_aplikacija_3/api/korisnici/pkos/grupe
+
+curl --request POST -d "{\"korIme\":\"arnold\", \"ime\":\"Arnold\", \"prezime\":\"Arnoldic\", \"email\":\"arnold@mail.com\", \"lozinka\":\"arnold123\"}" -H "Content-Type: application/json" -H "korisnik: pkos" -H "zeton: 161" http://localhost:8080/ftocko_aplikacija_3/api/korisnici
+
+Resurs: aerodromi
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/aerodromi
+
+curl --request POST -d "{\"icao\":\"ENGM\"}" -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/aerodromi
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/aerodromi/LDZA
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" "http://localhost:8080/ftocko_aplikacija_3/api/aerodromi/LOWW/polasci?vrsta=0&od=01.01.2022&do=02.01.2022"
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" "http://localhost:8080/ftocko_aplikacija_3/api/aerodromi/LOWW/polasci?vrsta=1&od=1640991600&do=1641078000"
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" "http://localhost:8080/ftocko_aplikacija_3/api/aerodromi/LOWW/dolasci?vrsta=0&od=01.01.2022&do=02.01.2022"
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" "http://localhost:8080/ftocko_aplikacija_3/api/aerodromi/LOWW/dolasci?vrsta=1&od=1640991600&do=1641078000"
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/aerodromi/LDZA/LOWW
+
+Resurs: serveri
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/serveri
+
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/serveri/QUIT
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/serveri/INIT
+curl -i -H "Content-Type: application/json" -H "korisnik: ftocko" -H "zeton: 17" http://localhost:8080/ftocko_aplikacija_3/api/serveri/CLEAR
+
+
+

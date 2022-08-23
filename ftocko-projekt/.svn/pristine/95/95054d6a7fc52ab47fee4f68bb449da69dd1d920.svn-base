@@ -1,0 +1,42 @@
+package org.foi.nwtis.ftocko.aplikacija_6.zrna;
+
+import java.util.List;
+
+import org.foi.nwtis.podaci.Aerodrom;
+
+import jakarta.ejb.Singleton;
+
+@Singleton
+public class Aerodromi {
+	
+	private List<Aerodrom> sviAerodromi = null;
+	
+	private List<Aerodrom> filtriraniAerodromi = null;
+	
+	private Aerodrom selektiraniAerodrom = null;
+
+	public Aerodrom getSelektiraniAerodrom() {
+		return selektiraniAerodrom;
+	}
+
+	public void setSelektiraniAerodrom(Aerodrom selektiraniAerodrom) {
+		this.selektiraniAerodrom = selektiraniAerodrom;
+	}
+
+	public List<Aerodrom> getFiltriraniAerodromi() {
+		return filtriraniAerodromi;
+	}
+
+	public void setFiltriraniAerodromi(List<Aerodrom> filtriraniAerodromi) {
+		this.filtriraniAerodromi = filtriraniAerodromi;
+	}
+
+	public List<Aerodrom> getSviAerodromi() {
+		return sviAerodromi;
+	}
+
+	public void setSviAerodromi(List<Aerodrom> sviAerodromi) {
+		this.sviAerodromi = sviAerodromi;
+	}
+
+}

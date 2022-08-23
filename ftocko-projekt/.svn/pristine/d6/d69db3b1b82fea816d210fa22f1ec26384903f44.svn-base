@@ -1,0 +1,50 @@
+package org.foi.nwtis.ftocko.aplikacija_3.klijenti;
+
+import org.foi.nwtis.ftocko.aplikacija_3.slusaci.SlusacAplikacije;
+import org.foi.nwtis.ftocko.vjezba_06.konfiguracije.bazaPodataka.PostavkeBazaPodataka;
+import org.foi.nwtis.podaci.Aerodrom;
+
+import com.google.gson.Gson;
+
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
+
+
+/**
+ * Klasa AerodromiKlijent.
+ */
+public class AerodromiKlijent {
+
+	/** adresa krajnje točke RESTful servisa iz 3.aplikacije */
+	private String adresaWA3 = "";
+
+	public AerodromiKlijent() {
+
+		try {
+			PostavkeBazaPodataka pbp = (PostavkeBazaPodataka) SlusacAplikacije.sc.getAttribute("Postavke");
+			String adresaWA3 = pbp.dajPostavku("adresa.wa_3");
+
+
+		} catch (Exception e) {
+			System.out.println("Nije moguće dohvatiti konfiguracijsku/e postavku/e!");
+			return;
+		}
+	}
+	
+	public int autorizirajKorisnika(String korisnik, String zeton) {
+		
+		Client klijent = ClientBuilder.newClient();
+		WebTarget webResurs = klijent.target(adresaWA3 + "/provjere").path(zeton);
+		Response restOdgovor = webResurs.request().header("Accept", "application/json").get();
+		int statusniKod = 0;
+		
+		statusniKod = restOdgovor.getStatus();
+		
+		return statusniKod;
+	}
+
+
+
+}

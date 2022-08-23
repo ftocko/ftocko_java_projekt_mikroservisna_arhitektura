@@ -1,0 +1,87 @@
+package org.foi.nwtis.ftocko.zadaca_3.podaci;
+
+import java.util.List;
+
+import org.foi.nwtis.podaci.Aerodrom;
+import org.foi.nwtis.rest.podaci.Lokacija;
+
+/**
+ * Klasa UpraviteljUdaljenostiAerodroma.
+ */
+public class UpraviteljUdaljenostiAerodroma {
+	
+	/**
+	 * Metoda za izračunavanje udaljenosti lokacije aerodroma od zadane lokacije.
+	 * Algoritam preuzet iz https://stackoverflow.com/questions/3694380/calculating-distance-between-two-points-using-latitude-longitude.
+	 * @param lokacijaAir lokacija aerodroma
+	 * @param l zadana lokacija
+	 * @return vraća udaljenost
+	 */
+	private int izracunajUdaljenost(Lokacija lokacijaAir, Lokacija l) {
+
+		double radijusZemlje = 6372797;
+		double gpsGs1 = Double.parseDouble(lokacijaAir.getLatitude());
+		double gpsGs2 = Double.parseDouble(l.getLatitude());
+		double gpsGd1 = Double.parseDouble(lokacijaAir.getLongitude());
+		double gpsGd2 = Double.parseDouble(l.getLongitude());
+
+		double gSirina = Math.toRadians(gpsGs2 - gpsGs1);
+		double gDuzina = Math.toRadians(gpsGd2 - gpsGd1);
+
+		double a = Math.sin(gSirina / 2) * Math.sin(gSirina / 2) + Math.cos(Math.toRadians(gpsGs1))
+				* Math.cos(Math.toRadians(gpsGs2)) * Math.sin(gDuzina / 2) * Math.sin(gDuzina / 2);
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		int udaljenost = (int) (radijusZemlje * c);
+
+		return udaljenost / 1000;
+
+	}
+	
+	/**
+	 * Metoda vraća najbliži aerodrom zadanoj lokaciji.
+	 *
+	 * @param aerodromi kolekcija aerodroma
+	 * @param lokacija zadana lokacija
+	 * @return vraća najbliži aerodrom
+	 */
+	public Aerodrom vratiNajbliziAerodrom(List<Aerodrom> aerodromi, String lokacija) {
+		
+		Aerodrom aerodrom = null;
+		Lokacija l = new Lokacija();
+		int minUdaljenost = 1000000000;
+		
+		try {
+			String [] p = lokacija.split(",");
+			l.setLatitude(p[0]);
+			l.setLongitude(p[1]);
+		}
+		
+		catch(Exception e) {
+			System.out.println("Problem kod splitanja stringa!");
+		}
+		
+		
+		for(Aerodrom a:aerodromi) {
+			
+			int udaljenost = izracunajUdaljenost(a.getLokacija(),l);
+			
+			if(udaljenost < minUdaljenost) {
+				minUdaljenost = udaljenost;
+			}
+			
+		}
+		
+		for(Aerodrom a:aerodromi) {
+			
+			int udaljenost = izracunajUdaljenost(a.getLokacija(),l);
+			
+			if(udaljenost == minUdaljenost) {
+				aerodrom = a;
+				break;
+			}
+			
+		}
+		
+		return aerodrom;
+	}
+}

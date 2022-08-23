@@ -1,0 +1,39 @@
+package org.foi.nwtis.ftocko.aplikacija_6.filteri;
+
+import java.io.IOException;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpFilter;
+
+@WebFilter(urlPatterns = { "/app/*" })
+public class FilterPregledKorisnika extends HttpFilter{
+
+	private FilterConfig filterConfig = null;
+
+	public void init(FilterConfig filterConfig) throws ServletException {
+		this.filterConfig = filterConfig;
+	}
+
+	public void destroy() {
+
+		this.filterConfig = null;
+	}
+
+	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+		
+			boolean nastaviRad = true;
+			System.out.println("Pozvana ruta /pregledKorisnika.xhtml, sad će se filtrirati :)!");
+			RequestDispatcher rd =
+					filterConfig.getServletContext().getRequestDispatcher(
+					"/index.xhtml");
+			rd.forward(req, res);
+			
+	}
+
+}

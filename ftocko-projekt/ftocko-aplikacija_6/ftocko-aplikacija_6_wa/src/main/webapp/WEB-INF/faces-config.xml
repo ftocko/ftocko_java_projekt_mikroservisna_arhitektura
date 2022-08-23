@@ -1,0 +1,26 @@
+<faces-config xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd">
+<navigation-rule>
+<from-view-id>/prijava.xhtml</from-view-id>
+<navigation-case>
+<from-action>#{prijava.prijaviKorisnika}</from-action>
+<from-outcome>OK</from-outcome>
+<to-view-id>/index.xhtml</to-view-id>
+</navigation-case>
+<navigation-case>
+<from-action>#{prijava.prijaviKorisnika}</from-action>
+<from-outcome>ERROR</from-outcome>
+<to-view-id>/prijava.xhtml</to-view-id>
+</navigation-case>
+<navigation-case>
+<from-action>#{prijava.odjaviKorisnika}</from-action>
+<from-outcome>DA</from-outcome>
+<to-view-id>/upravljanjePogreskama.xhtml</to-view-id>
+</navigation-case>
+<navigation-case>
+<from-action>#{prijava.odjaviKorisnika}</from-action>
+<from-outcome>NE</from-outcome>
+<to-view-id>/prijava.xhtml</to-view-id>
+</navigation-case>
+</navigation-rule>
+
+</faces-config>

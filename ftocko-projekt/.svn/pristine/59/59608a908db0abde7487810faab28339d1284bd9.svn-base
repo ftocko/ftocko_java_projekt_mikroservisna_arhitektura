@@ -1,0 +1,15 @@
+
+package org.foi.nwtis.ftocko.zadaca_3.ws.jaxws;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+
+@XmlRootElement(name = "dajBrojAerodroma", namespace = "http://ws.zadaca_3.ftocko.nwtis.foi.org/")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "dajBrojAerodroma", namespace = "http://ws.zadaca_3.ftocko.nwtis.foi.org/")
+public class DajBrojAerodroma {
+
+
+}

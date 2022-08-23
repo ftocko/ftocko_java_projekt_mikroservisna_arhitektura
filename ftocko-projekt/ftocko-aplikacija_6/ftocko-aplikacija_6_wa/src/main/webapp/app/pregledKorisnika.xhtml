@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:a="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:p="http://primefaces.org/ui">
+<f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
+	<h:head>
+		<title>Pregled korisnika</title>
+
+		<style type="text/css">
+.razlikuje {
+	background-color: deepskyblue !important;
+	color: white !important;
+}
+</style>
+
+	</h:head>
+	<h:body>
+		<h2>Pregled korisnika</h2>
+		<br />
+		<br />
+		<a href="#{application.contextPath}/index.xhtml">Početna</a>
+		<br />
+		<br />
+		<h:form id="forma">
+			<h:commandButton id="sinkroniziraj" value="Sinkroniziraj"
+				action="#{pregledKorisnika.sinkroniziraj}">
+				<f:ajax event="click" execute="prikazKorisnika" render ="prikazKorisnika" />
+			</h:commandButton>
+		</h:form>
+		<br />
+		<br />
+		<p:dataTable id="prikazKorisnika"
+			value="#{pregledKorisnika.korisnici}" var="k" paginator="true"
+			rows="15" rowStyleClass="#{k.razlikuje eq 'da' ? 'razlikuje' : null}">
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Ime" />
+				</f:facet>
+				${k.ime}
+			</p:column>
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Prezime" />
+				</f:facet>
+				${k.prezime}
+			</p:column>
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Korisničko ime" />
+				</f:facet>
+				${k.korime}
+			</p:column>
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Email" />
+				</f:facet>
+				${k.email}
+			</p:column>
+			<p:column>
+				<f:facet name="header">
+					<h:outputText value="Lozinka" />
+				</f:facet>
+				${k.lozinka}
+			</p:column>
+		</p:dataTable>
+	</h:body>
+</f:view>
+</html>
